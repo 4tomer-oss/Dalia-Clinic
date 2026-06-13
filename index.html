@@ -16,18 +16,41 @@
 
 <div class="card">
     <h2>כרטיס ביקור דיגיטלי</h2>
-    <p>לחץ על הכפתור למטה כדי לשמור את פרטי איש הקשר ישירות לטלפון שלך.</p>
-    <!-- תגית ה-download כאן מאלצת את כרום להוריד במקום להציג את הטקסט -->
-    <a id="download-link" href="contact.vcf" download="contact.vcf" class="btn">שמור איש קשר</a>
+    <p>פרטי איש הקשר יורדים כעת לטלפון שלך. אם ההורדה לא החלה, לחץ על הכפתור למטה:</p>
+    <button id="download-btn" class="btn">שמור איש קשר</button>
 </div>
 
 <script>
-    // ניסיון להורדה אוטומטית מיד כשהדף נפתח
+    async function forceDownloadVcard() {
+        try {
+            // קריאת קובץ איש הקשר מהשרת
+            const response = await fetch('contact.vcf');
+            const text = await response.text();
+            
+            // יצירת קובץ וירטואלי בזיכרון הדפדפן שמאלץ הורדה באנדרואיד ובאייפון
+            const blob = new Blob([text], { type: 'text/vcard;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'contact.vcf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Download failed, falling back:", error);
+            window.location.href = 'contact.vcf';
+        }
+    }
+
+    // הפעלה אוטומטית מיד כשהדף נפתח
     window.onload = function() {
-        setTimeout(function() {
-            document.getElementById('download-link').click();
-        }, 300);
+        setTimeout(forceDownloadVcard, 300);
     };
+
+    // גיבוי: הפעלה ידנית בלחיצה על הכפתור
+    document.getElementById('download-btn').addEventListener('click', forceDownloadVcard);
 </script>
 
 </body>
